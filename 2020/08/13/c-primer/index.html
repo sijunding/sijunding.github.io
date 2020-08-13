@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>c++primer | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="tcp 超时重传、滑动窗口、流量控制、拥塞机制。参考tcp图解线程 os thread和user thread的区别，参考自os&#x2F;user thread 使用pthread_setschedparam设置c++线程的优先级，参考自c++ thread priority  热更新 使用nginx做热更新ngix热更新 使用lua脚本热更新lua热更新 linux so热更新  paxos算法 参考p">
+<meta property="og:type" content="article">
+<meta property="og:title" content="c++primer">
+<meta property="og:url" content="http://yoursite.com/2020/08/13/c-primer/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="tcp 超时重传、滑动窗口、流量控制、拥塞机制。参考tcp图解线程 os thread和user thread的区别，参考自os&#x2F;user thread 使用pthread_setschedparam设置c++线程的优先级，参考自c++ thread priority  热更新 使用nginx做热更新ngix热更新 使用lua脚本热更新lua热更新 linux so热更新  paxos算法 参考p">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2020-08-13T10:57:48.000Z">
+<meta property="article:modified_time" content="2020-08-13T10:58:16.698Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 5.0.2"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-c-primer" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/08/13/c-primer/" class="article-date">
+  <time datetime="2020-08-13T10:57:48.000Z" itemprop="datePublished">2020-08-13</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      c++primer
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="tcp"><a href="#tcp" class="headerlink" title="tcp"></a>tcp</h3><ol>
+<li>超时重传、滑动窗口、流量控制、拥塞机制。参考<a target="_blank" rel="noopener" href="https://www.cnblogs.com/xiaolincoding/p/12732052.html">tcp图解</a><h3 id="线程"><a href="#线程" class="headerlink" title="线程"></a>线程</h3></li>
+<li><code>os thread</code>和<code>user thread</code>的区别，参考自<a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/15983872/difference-between-user-level-and-kernel-supported-threads">os/user thread</a></li>
+<li>使用<code>pthread_setschedparam</code>设置c++线程的优先级，参考自<a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/18884510/portable-way-of-setting-stdthread-priority-in-c11">c++ thread priority</a></li>
+</ol>
+<h3 id="热更新"><a href="#热更新" class="headerlink" title="热更新"></a>热更新</h3><ol>
+<li>使用nginx做热更新<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/59193526">ngix热更新</a></li>
+<li>使用lua脚本热更新<a target="_blank" rel="noopener" href="https://huailiang.github.io/blog/2018/luafix/">lua热更新</a></li>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/162366167">linux so热更新</a></li>
+</ol>
+<h3 id="paxos算法"><a href="#paxos算法" class="headerlink" title="paxos算法"></a>paxos算法</h3><ol>
+<li>参考<a target="_blank" rel="noopener" href="https://juejin.im/entry/586db517ac502e12d639733b">paxos</a></li>
+<li>参考<a target="_blank" rel="noopener" href="https://ocavue.com/paxos.html">图解</a></li>
+<li>选择主的proposer解决paxos算法的活性问题，可以看成是一种<strong>活锁</strong>。</li>
+</ol>
+<h3 id="死锁和活锁"><a href="#死锁和活锁" class="headerlink" title="死锁和活锁"></a>死锁和活锁</h3><ol>
+<li><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/20566246">活锁</a></li>
+<li>死锁的四个条件<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/25677118">四个条件</a></li>
+</ol>
+<ul>
+<li>互斥条件、请求和保持条件、不剥夺条件、循环等待条件。</li>
+</ul>
+<h3 id="读muduo前两章想到的"><a href="#读muduo前两章想到的" class="headerlink" title="读muduo前两章想到的"></a>读muduo前两章想到的</h3><ol>
+<li>shared_ptr尽量采用<code>栈上对象+ pass by const reference</code>解决性能和线程安全的问题。</li>
+<li><code>enable_shared_from_this</code>可以在类的成员函数实现内部，利用<code>shared_from_this()</code>转换成为<code>shard_ptr</code>类型，这样可以保证：this因为被别的owner持有，生命周期加长。</li>
+<li><code>double check singleton</code>的线程安全性问题，参考<a target="_blank" rel="noopener" href="https://blog.csdn.net/bdss58/article/details/44813597">c++线程安全的单例</a>和<a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/2576022/efficient-thread-safe-singleton-in-c">atomic解决方案</a></li>
+</ol>
+<h3 id="关于zab协议"><a href="#关于zab协议" class="headerlink" title="关于zab协议"></a>关于zab协议</h3><ol>
+<li>参考<a target="_blank" rel="noopener" href="https://juejin.im/post/5b924b0de51d450e9a2de615">zab简单介绍</a>和《从paxos到zookeeper》</li>
+<li><a target="_blank" rel="noopener" href="https://juejin.im/post/5c01532ef265da61362232ed">zookeeper分布式锁</a></li>
+<li><a target="_blank" rel="noopener" href="https://dbaplus.cn/news-141-2053-1.html">zookeeper的顺序一致性原理</a></li>
+<li>zookeeper如果长链接太多怎么办，需要理解zookeeper的leader/follower/observer的角色，以及实际搭建的原理。<a target="_blank" rel="noopener" href="https://www.cnblogs.com/sunddenly/p/4138580.html">系统学习zk系列</a></li>
+</ol>
+<h3 id="c-迭代器失效规则"><a href="#c-迭代器失效规则" class="headerlink" title="c++迭代器失效规则"></a>c++迭代器失效规则</h3><ol>
+<li>参考自<a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/6438086/iterator-invalidation-rules">iterator invalidation</a></li>
+<li><a target="_blank" rel="noopener" href="http://c.biancheng.net/view/6908.html">deque是通过一段段连续数组实现的</a></li>
+</ol>
+<ul>
+<li>deque和vector相比的区别：deque支持头部插入；它们都支持随机访问；</li>
+<li>list和vector相比的区别：双向链表为底层实现，支持任意位置常数时间快速插入删除（前提是找到了iterator）</li>
+</ul>
+<ol start="3">
+<li>可以自己定义一个hashmap，<a target="_blank" rel="noopener" href="https://blog.csdn.net/zhangyun75/article/details/80866540">hashmap简单实现</a></li>
+</ol>
+<h3 id="redis-跳表"><a href="#redis-跳表" class="headerlink" title="redis 跳表"></a>redis 跳表</h3><ol>
+<li>参考自<a target="_blank" rel="noopener" href="https://juejin.im/post/57fa935b0e3dd90057c50fbc">redis跳表</a></li>
+</ol>
+<h3 id="redis-rehash过程"><a href="#redis-rehash过程" class="headerlink" title="redis rehash过程"></a>redis rehash过程</h3><ol>
+<li>参考自《redis设计与实践》</li>
+</ol>
+<h3 id="redis缓存穿透、缓存雪崩、缓存击穿"><a href="#redis缓存穿透、缓存雪崩、缓存击穿" class="headerlink" title="redis缓存穿透、缓存雪崩、缓存击穿"></a>redis缓存穿透、缓存雪崩、缓存击穿</h3><ol>
+<li>缓存穿透，就是用一个<code>不存在key</code>越过缓存，直到db（虽然db也没有)；解决方案：bloom过滤</li>
+<li>缓存雪崩，所有缓存<code>同时</code>失效；解决方案：设置随机值</li>
+<li>缓存击穿，热点key在同一时刻被大量访问；解决方案：分布式锁。</li>
+<li>参考自<a target="_blank" rel="noopener" href="https://blog.csdn.net/zeb_perfect/article/details/54135506">缓存穿透/雪崩/击穿</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/AAA821/article/details/82930679">redis性能瓶颈</a></li>
+</ol>
+<h3 id="dns和arp之旅"><a href="#dns和arp之旅" class="headerlink" title="dns和arp之旅"></a>dns和arp之旅</h3><ol>
+<li>参考自<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/iSZp41SRmh5b2bXIvzemIw">dns和arp</a></li>
+</ol>
+<h3 id="加密算法和https"><a href="#加密算法和https" class="headerlink" title="加密算法和https"></a>加密算法和https</h3><ol>
+<li>参考自<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/bUy220-ect00N4gnO0697A">http和https</a></li>
+<li>rsa算法和非对称加密：公钥加密后，只能用私钥解密；私钥加密后，只能用公钥解密。<a target="_blank" rel="noopener" href="http://www.ruanyifeng.com/blog/2011/08/what_is_a_digital_signature.html">数字证书</a></li>
+</ol>
+<h3 id="k8s的list-watch机制"><a href="#k8s的list-watch机制" class="headerlink" title="k8s的list-watch机制"></a>k8s的list-watch机制</h3><ol>
+<li>list相当于全量拉取，watch使用的是<code>Transfet-Encoding:chunked</code>分块协议，参看自<a target="_blank" rel="noopener" href="http://wsfdl.com/kubernetes/2019/01/10/list_watch_in_k8s.html">k8s watch机制</a></li>
+</ol>
+<h3 id="etcd使用raft一致性算法"><a href="#etcd使用raft一致性算法" class="headerlink" title="etcd使用raft一致性算法"></a>etcd使用raft一致性算法</h3><ol>
+<li>etcd参考自<a target="_blank" rel="noopener" href="https://draveness.me/etcd-introduction/">etcd原理</a></li>
+</ol>
+<h3 id="redis-sentinel-监控"><a href="#redis-sentinel-监控" class="headerlink" title="redis sentinel 监控"></a>redis sentinel 监控</h3><ol>
+<li>参考自<a target="_blank" rel="noopener" href="https://www.jianshu.com/p/42ee966f96e5">sentinel监控</a></li>
+</ol>
+<h3 id="redis-三种集群"><a href="#redis-三种集群" class="headerlink" title="redis 三种集群"></a>redis 三种集群</h3><ol>
+<li>参考自<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/145186839">redis-sentinel和redis cluster</a></li>
+</ol>
+<h3 id="mysql相关"><a href="#mysql相关" class="headerlink" title="mysql相关"></a>mysql相关</h3><ol>
+<li>可以好好阅读《mysql技术内幕》，简单的索引知识可以参考<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/RemJcqPIvLArmfWIhoaZ1g">mysql非主键索引</a></li>
+<li><a target="_blank" rel="noopener" href="https://juejin.im/post/5c2c8dace51d455d382ee046">最左前缀匹配</a></li>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/114993399?utm_source=wechat_session&utm_medium=social&utm_oi=43889008312320">mysql常见面试</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/c0901d5cc9d2">mysql倒排索引实现全文匹配</a></li>
+</ol>
+<ul>
+<li>常见的索引是文档id–》文档内容；倒排索引其实是文档内容–》文档id；但是叫<code>倒排</code>不合适，英文是<code>inverted index</code>转置更合适。</li>
+</ul>
+<ol start="5">
+<li>mysiam的索引文件是个b+树，它的叶子结点的值：指向了<code>数据页的地址</code>；因此它的数据页和索引页是分开的。</li>
+<li>mysql的热备份，就是<code>主从binlog的拷贝</code>。</li>
+<li>mysql的主从有：一主一丛、一主多从、双主等等。<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/50597960">mysql主从分类</a></li>
+<li><code>覆盖索引</code>就是指的不用回表。</li>
+<li><code>乐观锁</code>：先从db读取version，如果要更新的话，必须<code>update db set version = version + 1 where 真实业务 AND version=上一次读的</code>才更新。参考<a target="_blank" rel="noopener" href="https://juejin.im/post/5b4977ae5188251b146b2fc8">乐观锁和悲观锁</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/19719997/answer/81930332">myisam的索引页存放的是指向数据页的指针，innodb的索引页存放的是主键值</a></li>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/116866170">相对全面的mysql面试题</a> ，以及<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/63377684">相对详细的介绍</a></li>
+<li><a target="_blank" rel="noopener" href="https://juejin.im/post/5cef2c43e51d45572c05ffe3">详细了解B+树在磁盘中的结构</a><h3 id="redis事务的原理"><a href="#redis事务的原理" class="headerlink" title="redis事务的原理"></a>redis事务的原理</h3></li>
+<li>事务是把指令全服放入队列，而不是马上执行，当发送<code>EXEC</code>后一次性执行，来实现事务的<code>一致性</code>的。</li>
+<li><code>watch</code>机制是把，watch相同key的所有客户端放在一个链表中；当key被改变，将该链表的所有client的<code>REDIS_DIRTY_CAS</code>选项打开，那这些client在执行<code>EXEC</code>的时候，它们的事务就会失败。<a target="_blank" rel="noopener" href="https://redisbook.readthedocs.io/en/latest/feature/transaction.html">watch redis原理</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/fangjian1204/article/details/50585080">为什么有了事务还要lua脚本</a></li>
+<li><a target="_blank" rel="noopener" href="https://juejin.im/post/5cc165816fb9a03202221dd5">redis分布式锁</a></li>
+<li>分布式锁依然出问题：client1加锁后，锁超时client2获取锁；此时client1还在执行————引入chubby的实现。还有一种是redission，实际就是业务有个<code>看门狗</code>不断续期<a target="_blank" rel="noopener" href="https://blog.csdn.net/wutengfei_java/article/details/100699538">分布式锁超时</a></li>
+<li><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/29327544/pipelining-vs-transaction-in-redis">redis pipeline和transaction区别</a>；二者都能保证批量指令按照顺序执行；但是pipeline中的指令会被其它redis client的请求指令插入；但是transaction可以保证批量指令为一个atomic的操作。</li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/Muscleape/article/details/105670481">redis rdb采用了fork子进程的cow技术</a></li>
+<li><a target="_blank" rel="noopener" href="https://juejin.im/post/5dccf260f265da0bf66b626d">redis sdown和odown</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/bb857f883ccb">redis集群的moved和ask重定向</a></li>
+</ol>
+<h3 id="redis-cluster-槽位"><a href="#redis-cluster-槽位" class="headerlink" title="redis cluster 槽位"></a>redis cluster 槽位</h3><ol>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/80335611">16384个slot</a></li>
+</ol>
+<h3 id="关于bitmap算法和kmp算法"><a href="#关于bitmap算法和kmp算法" class="headerlink" title="关于bitmap算法和kmp算法"></a>关于bitmap算法和kmp算法</h3><ol>
+<li><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/r2WtHW7UcinIjelILSnWwg">bitmap求一个数是否在40亿中出现</a></li>
+<li>kmp算法就是字符串匹配,<a target="_blank" rel="noopener" href="https://www.zhihu.com/question/21923021">kmp</a></li>
+</ol>
+<h3 id="c-智能指针简单实现"><a href="#c-智能指针简单实现" class="headerlink" title="c++智能指针简单实现"></a>c++智能指针简单实现</h3><ol>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_33762043/article/details/80072391">智能指针简单实现</a></li>
+</ol>
+<h3 id="shmget和semget"><a href="#shmget和semget" class="headerlink" title="shmget和semget"></a>shmget和semget</h3><ol>
+<li>shmget是<code>具名</code>的共享内存，semop可以实现信号量的<code>PV</code>操作。参考自<a target="_blank" rel="noopener" href="https://www.cnblogs.com/forstudy/archive/2012/03/26/2413724.html">shmget和semop</a></li>
+</ol>
+<h3 id="fifo-和pipe"><a href="#fifo-和pipe" class="headerlink" title="fifo 和pipe"></a>fifo 和pipe</h3><ol>
+<li>参考自<a target="_blank" rel="noopener" href="https://www.cnblogs.com/littlehann/p/6906164.html">fifo和pipe</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/d4bb6d4f8e4c">unixsocket简单理解</a></li>
+</ol>
+<h3 id="可靠udp"><a href="#可靠udp" class="headerlink" title="可靠udp"></a>可靠udp</h3><ol>
+<li><a target="_blank" rel="noopener" href="https://juejin.im/post/5e6b6f696fb9a07cc61cfd0c">介绍可靠udp</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/6c73a4585eba">udp使用seq-ack/缓冲区用来重传</a></li>
+</ol>
+<h3 id="条件变量的虚假唤醒"><a href="#条件变量的虚假唤醒" class="headerlink" title="条件变量的虚假唤醒"></a>条件变量的虚假唤醒</h3><ol>
+<li>参考自<a target="_blank" rel="noopener" href="https://blog.csdn.net/Leeds1993/article/details/52738845">condition_variable的虚假唤醒</a></li>
+</ol>
+<h3 id="nat简介"><a href="#nat简介" class="headerlink" title="nat简介"></a>nat简介</h3><ol>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/CrystalShaw/article/details/80677966">nat简单介绍</a></li>
+</ol>
+<h3 id="redis和db双写一致性、redis惰性删除、redis-cluster和redis-sentinel对比、redis事务"><a href="#redis和db双写一致性、redis惰性删除、redis-cluster和redis-sentinel对比、redis事务" class="headerlink" title="redis和db双写一致性、redis惰性删除、redis-cluster和redis-sentinel对比、redis事务"></a>redis和db双写一致性、redis惰性删除、redis-cluster和redis-sentinel对比、redis事务</h3><ol>
+<li><a target="_blank" rel="noopener" href="https://juejin.im/post/5db6e4f7e51d4529ed291bb0">redis-事务</a></li>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/136796077">redis惰性删除内存</a></li>
+<li>rdb模式和aof模式持久化，参考《redis设计与实现》</li>
+<li>最经典的redis和db双写一致性：先读内存，再读db；先写db，再<code>删除内存</code>；删除而非更新的原因——懒加载内存。</li>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/50392209">redis的惰性删除和内存淘汰策略之间的关系</a></li>
+</ol>
+<h3 id="mongo的锁"><a href="#mongo的锁" class="headerlink" title="mongo的锁"></a>mongo的锁</h3><ol>
+<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/d838a5905303">mongo意向锁</a></li>
+</ol>
+<h3 id="操作系统简介"><a href="#操作系统简介" class="headerlink" title="操作系统简介"></a>操作系统简介</h3><ol>
+<li><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s?__biz=MzU2NDg0OTgyMA==&mid=2247485559&idx=1&sn=dfc9973ebf045284c771efa74cfc4ee7">操作系统简介</a></li>
+<li><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s?__biz=MzU2NDg0OTgyMA==&mid=2247485619&idx=1&sn=819fffc4380b4e976f541def5ed805f3">进程和线程简介</a></li>
+<li><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s?__biz=MzU2NDg0OTgyMA==&mid=2247485927&idx=1&sn=a05bd80ed7147ed9b66be3807747c450">文件系统ntfs/fat和inode</a></li>
+<li>磁盘的顺序io和随机io：本次io的初始扇区地址和上次io的结束扇区地址相同，不需要磁头换道，因而非常快！</li>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/22482058">fat和ext2的比较</a></li>
+<li><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/rSO5RJzY620zWo-VPWQ0aQ">物理内存的buddy算法和slab分配器</a></li>
+<li><code>mount 磁盘分区 挂载目录</code>，目录是逻辑上的区分，分区是物理上的区分。<a target="_blank" rel="noopener" href="https://kknews.cc/code/alzmjgx.html">fdisk管理分区</a></li>
+</ol>
+<ul>
+<li>inode节点、data block等都属于物理上的磁盘分区。<a target="_blank" rel="noopener" href="https://blog.csdn.net/zhangpower1993/article/details/52213030">磁盘分区和挂载目录</a></li>
+</ul>
+<ol start="8">
+<li>linux的虚拟文件系统。</li>
+</ol>
+<ul>
+<li>每次通过mount安装一个文件系统，都唯一对应一个<code>超级块super_block</code>和<code>挂载点vfsmount</code>。其中超级块会记录<code>实际物理文件的inode信息</code>。super_block和vfsmount就是mount的两个参数，可以参考<a target="_blank" rel="noopener" href="https://blog.csdn.net/jasonchen_gbd/article/details/51511261">vfs介绍</a></li>
+<li>多个进程内存中的<code>不同的struct file文件对象</code>，可以同时打开和操作<code>同一个物理文件</code>，可以参考<a target="_blank" rel="noopener" href="https://www.ibm.com/developerworks/cn/linux/l-cn-vfs/">linux虚拟文件系统</a></li>
+<li>每个进程都有自己的<code>file descriptor table文件描述符表</code>，同时内核维护<code>唯一的open file table</code>，因此不同进程的相同fd可能指向<code>相同的物理文件</code>。而linux也提供<code>dup/dup2</code>等函数复制fd，参考<a target="_blank" rel="noopener" href="https://unix.stackexchange.com/questions/28384/how-can-same-fd-in-different-processes-point-to-the-same-file">same fd</a></li>
+<li>fork子进程拷贝了自己的<code>文件描述符表</code>，但是父子进程的<code>struct file文件对象</code>只有一份。参考<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014379540/article/details/53456070">文件描述符表</a></li>
+<li><a target="_blank" rel="noopener" href="https://books.google.com.hk/books?id=QXj6AQAAQBAJ&pg=PA133&lpg=PA133&dq=file+blocks+not+adjacent&source=bl&ots=4eprmT6Uuz&sig=ACfU3U1qFOyGzpEVE4aYtaWrEO_PjwtvRw&hl=en&sa=X&redir_esc=y#v=onepage&q&f=false">inode和block描述</a></li>
+<li><a target="_blank" rel="noopener" href="https://juejin.im/post/5ed992f7f265da76bb013e72">磁盘io描述</a></li>
+<li><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1058303">kafka的顺序写</a><h3 id="c-this和vptr指针"><a href="#c-this和vptr指针" class="headerlink" title="c++ this和vptr指针"></a>c++ this和vptr指针</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">A</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">foo</span><span class="params">()</span> </span>&#123;&#125;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">bar</span><span class="params">()</span> </span>&#123;&#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    A *a = <span class="literal">nullptr</span>;</span><br><span class="line">    a-&gt;foo();<span class="comment">//函数在code段，有个隐藏的入参this指针，此时this为nullptr，但是函数体没有用this，正确</span></span><br><span class="line">    a-&gt;bar();<span class="comment">//错误，因为要通过a的vptr去找vtbl，但vptr根本找不到</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">char</span>* <span class="title">strncpy</span><span class="params">(<span class="keyword">char</span>* dest, <span class="keyword">const</span> <span class="keyword">char</span>* src, <span class="keyword">size_t</span> n)</span></span>&#123;<span class="comment">//自定义strncpy</span></span><br><span class="line">    <span class="keyword">size_t</span> i;</span><br><span class="line">    <span class="keyword">for</span>(i =<span class="number">0</span>; i&lt;n&amp;&amp; src[i]!= <span class="string">&#x27;\0&#x27;</span>; i++)&#123;</span><br><span class="line">        dest[i] = src[i];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">while</span>(i &lt; n)&#123;</span><br><span class="line">        dest[i++] = <span class="string">&#x27;\0&#x27;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> dest;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="进程和线程的真实区别"><a href="#进程和线程的真实区别" class="headerlink" title="进程和线程的真实区别"></a>进程和线程的真实区别</h3></li>
+</ul>
+<ol>
+<li>参考自<a target="_blank" rel="noopener" href="https://www.zhihu.com/question/25532384/answer/81152571">上下文</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/anker/p/3271773.html">孤儿进程和僵尸进程</a></li>
+</ol>
+<h3 id="ip和traceroute原理"><a href="#ip和traceroute原理" class="headerlink" title="ip和traceroute原理"></a>ip和traceroute原理</h3><ol>
+<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/75a5822d0eec">traceroute原理</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.nowcoder.net/n/74f38cd527484ae78f3404f24e7d3e5b">icmp的数据包格式</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/f2006116/article/details/51159895">ping的原理</a></li>
+</ol>
+<h3 id="算法补缺"><a href="#算法补缺" class="headerlink" title="算法补缺"></a>算法补缺</h3><ol>
+<li>二叉树的后序遍历，非递归。使用栈来做，前序遍历(根-》左-》右)，变成（根-》右-》左），然后反转一下（左-》右-》根）就是了。</li>
+<li>threeSum，可以先把数据排序，然后针对每一个元素，进行首尾双指针即可。</li>
+<li>twosum就使用简单的unordered_map。</li>
+<li>反转字符串也可以使用双指针。</li>
+<li>trie树的时间复杂度是o(len(key))和输入的长度有关，和树高度无关；而bst的时间复杂度就和树高有关，可以参考<a target="_blank" rel="noopener" href="https://leetcode-cn.com/problems/implement-trie-prefix-tree/solution/trie-tree-de-shi-xian-gua-he-chu-xue-zhe-by-huwt/">trie前缀树</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/luanpeng825485697/article/details/79974835">topk问题</a>，也可以参考<a target="_blank" rel="noopener" href="https://juejin.im/entry/5c565fb7f265da2d84105958">堆解决topk问题</a></li>
+</ol>
+<h3 id="缺页中断后的页面置换算法"><a href="#缺页中断后的页面置换算法" class="headerlink" title="缺页中断后的页面置换算法"></a>缺页中断后的页面置换算法</h3><ol>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/Alatebloomer/article/details/79976068">物理内存的页面置换算法</a></li>
+</ol>
+<h3 id="c-的vector为什么是2倍增加"><a href="#c-的vector为什么是2倍增加" class="headerlink" title="c++的vector为什么是2倍增加"></a>c++的vector为什么是2倍增加</h3><ol>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/bryant_xw/article/details/89524910">保证push_back均摊O(1)</a></li>
+</ol>
+<h3 id="unique-ptr和shared-ptr删除器"><a href="#unique-ptr和shared-ptr删除器" class="headerlink" title="unique_ptr和shared_ptr删除器"></a>unique_ptr和shared_ptr删除器</h3><ol>
+<li>unique_ptr通过编译时绑定删除器；shared_ptr通过运行时绑定删除器。</li>
+</ol>
+<h3 id="docker隔离"><a href="#docker隔离" class="headerlink" title="docker隔离"></a>docker隔离</h3><ol>
+<li><a target="_blank" rel="noopener" href="https://coolshell.cn/articles/17010.html">linux namespace隔离环境</a></li>
+<li><a target="_blank" rel="noopener" href="https://coolshell.cn/articles/17049.html">linux cgroup隔离资源</a></li>
+<li>docker通过mount namespace来实现文件系统的隔离，docker内部的挂载点<code>/var</code>在物理机上可能实际是<code>/var/lib/&lt;container&gt;/rootfs/var</code>。</li>
+<li>docker和vm的最大区别是：vm多了一个<code>guest OS</code>操作系统；而docker因为隔离了文件系统/资源等，可以直接使用主机的OS操作系统，而无需自己的<code>guest OS</code>，因此可以节省大量的磁盘空间。</li>
+</ol>
+<h3 id="union判断字节序"><a href="#union判断字节序" class="headerlink" title="union判断字节序"></a>union判断字节序</h3><ol>
+<li>大端序：低地址存放数据的高位；高地址存放数据的低位；小端序相反。</li>
+</ol>
+<ul>
+<li>比如0x1234从地址0x4000存放。<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">0x4000 0x12 //大端序</span><br><span class="line">0x4001 0x34</span><br></pre></td></tr></table></figure>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">is_big_endian</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="keyword">union</span>&#123;</span><br><span class="line">        uint_32 i;</span><br><span class="line">        <span class="keyword">char</span>[<span class="number">4</span>] c;</span><br><span class="line">    &#125;u = &#123;<span class="number">0x01020304</span>&#125;; <span class="comment">//联合体成员的存储是重叠的，此时i是活跃的</span></span><br><span class="line">    <span class="keyword">return</span> u.c[<span class="number">0</span>] == <span class="number">1</span>; <span class="comment">//union是从低地址存放的，如果c的第0个元素（低地址）存放的是0x01则为大端</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h3 id="poll-select-epoll区别"><a href="#poll-select-epoll区别" class="headerlink" title="poll/select/epoll区别"></a>poll/select/epoll区别</h3><ol>
+<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/anker/p/3265058.html">epoll/poll/select区别</a></li>
+</ol>
+<h3 id="c-反射机制简单实现"><a href="#c-反射机制简单实现" class="headerlink" title="c++反射机制简单实现"></a>c++反射机制简单实现</h3><ol>
+<li>使用map&lt;string, functor&gt;保存string对应的函数指针，工厂类根据传入的string，调用对应的函数指针构造即可。参考自<a target="_blank" rel="noopener" href="https://www.cnblogs.com/xudong-bupt/p/6643721.html">c++反射</a></li>
+</ol>
+<h3 id="锁在操作系统层面的实现"><a href="#锁在操作系统层面的实现" class="headerlink" title="锁在操作系统层面的实现"></a>锁在操作系统层面的实现</h3><ol>
+<li>锁本质就是一个内存空间。如果被赋值了就是加了锁。硬件的CPU提供CMPXCHG指令，实现原子粒度的CAS，能保证同一时刻只有一个线程能够抢到锁。</li>
+<li>其它线程要不然spinlock一直抢；要么申请挂起让出cpu，就是mutex。参考自<a target="_blank" rel="noopener" href="https://www.zhihu.com/question/332113890">锁底层实现</a></li>
+</ol>
+<ul>
+<li>忙等待就是spinlock</li>
+</ul>
+<h3 id="中断原理"><a href="#中断原理" class="headerlink" title="中断原理"></a>中断原理</h3><ol>
+<li>中断就是设备在就绪之后，发送中断信号给CPU，这是CPU根据中断优先级去暂停当前任务，处理设备的中断任务。否则CPU需要一直等在设备上<a target="_blank" rel="noopener" href="https://www.cnblogs.com/Jack-Blog/p/12038716.html">中断</a></li>
+</ol>
+<h3 id="c-读写锁"><a href="#c-读写锁" class="headerlink" title="c++读写锁"></a>c++读写锁</h3><ol>
+<li>使用mutex，再加上condition_variable，和两个引用计数；可以实现自己的读写锁，C++17有提供shared_mutex，参考自<a target="_blank" rel="noopener" href="https://blog.csdn.net/zxc024000/article/details/88814461">自定义读写锁</a></li>
+</ol>
+<h3 id="dns的a-cname-ns"><a href="#dns的a-cname-ns" class="headerlink" title="dns的a/cname/ns"></a>dns的a/cname/ns</h3><ol>
+<li>A返回域名指向的IP地址，CNAME返回另外一个域名，NS保存下一级域名信息的服务器域名，可以参考<a target="_blank" rel="noopener" href="https://www.ruanyifeng.com/blog/2016/06/dns.html">dns释义</a></li>
+<li><a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/SRV%E8%AE%B0%E5%BD%95">dns的srv记录</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/208f268e18f4">/etc/resolv.conf配置</a></li>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/80141656">kubedns的原理介绍</a>。简单来说kubedns监控service和endpoint的变化，并将最新的变化维护进内存来服务<code>svc-a.namespace</code>等类似的请求。</li>
+<li>kubedns和kubeproxy、api-server等一样都是在<code>kube-system</code>命名空间下的pod。<code>kubedns</code>所在的ip和，任意节点的用户pod中的<code>/etc/resolv.conf:nameserver</code>是一样的，这样用户pod就可以调用到kubedns。</li>
+</ol>
+<ul>
+<li>kubedns中的<code>模块kubedns</code>监控service和endpoint的变化，并将最新的变化维护进内存。<code>skydns模块</code>真正负责dns解析。<a target="_blank" rel="noopener" href="https://www.kubernetes.org.cn/542.html">k8s服务发现</a></li>
+<li>用户pod通过kube-dns解析到<code>svc-a.namespace</code>的<code>service ip</code>之后（即服务发现）；再通过<code>kube-proxy</code>的<code>iptables</code>实现<code>service ip</code>到真实后端的<code>pod ip</code>的负载均衡。参考<a target="_blank" rel="noopener" href="https://www.cnblogs.com/devilwind/p/8881148.html">k8s负载均衡和服务发现</a>，简单来说就是通过<code>iptables</code>的 <code>probability</code> 特性来做到的。</li>
+<li>k8s的存活探针除了使用<code>http</code>探测之外，还可以使用<code>command</code>命令探测，返回0则认为正常。</li>
+</ul>
+<h3 id="oauth和jwt"><a href="#oauth和jwt" class="headerlink" title="oauth和jwt"></a>oauth和jwt</h3><ol>
+<li>jwt主要依赖服务端有一个<code>密钥</code>，<code>HS256</code>对称加密算法利用密钥，加密payload，防止<code>内容伪造</code>。<a target="_blank" rel="noopener" href="http://blog.leapoahead.com/2015/09/06/understanding-jwt/">jwt介绍</a></li>
+<li><a target="_blank" rel="noopener" href="http://blog.leapoahead.com/2015/09/07/user-authentication-with-jwt/">jwt和常见session区别</a></li>
+<li><a target="_blank" rel="noopener" href="https://juejin.im/post/6844903842773991431">session和cookie</a></li>
+<li><a target="_blank" rel="noopener" href="http://www.ruanyifeng.com/blog/2019/04/oauth_design.html">OAuth 的核心就是向第三方应用颁发令牌</a></li>
+<li><a target="_blank" rel="noopener" href="http://www.ruanyifeng.com/blog/2019/04/oauth-grant-types.html">通过client_id和client_secret拿到令牌</a></li>
+<li><a target="_blank" rel="noopener" href="http://www.ruanyifeng.com/blog/2019/04/github-oauth.html">oauth实际例子:令牌最终在authorization中</a></li>
+</ol>
+<h3 id="bitmap算法"><a href="#bitmap算法" class="headerlink" title="bitmap算法"></a>bitmap算法</h3><ol>
+<li><a target="_blank" rel="noopener" href="https://juejin.im/post/5c4fd2af51882525da267385">bitmap介绍</a></li>
+</ol>
+<h3 id="双缓冲技术"><a href="#双缓冲技术" class="headerlink" title="双缓冲技术"></a>双缓冲技术</h3><ol>
+<li>pass</li>
+</ol>
+<h3 id="敖丙的复习之路"><a href="#敖丙的复习之路" class="headerlink" title="敖丙的复习之路"></a>敖丙的复习之路</h3><ol>
+<li><a target="_blank" rel="noopener" href="https://github.com/AobingJava/JavaFamily?utm_source=wechat_session&utm_medium=social&utm_oi=43889008312320">整体复习</a>，这个相当于从各方面整体复习一遍，值得面试时好好看看。</li>
+</ol>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/08/13/c-primer/" data-id="ckdsoysil00019y0c9j8y4bmu" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2020/08/13/thinking-in-java/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">thinking-in-java</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/08/">August 2020</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2020/08/13/c-primer/">c++primer</a>
+          </li>
+        
+          <li>
+            <a href="/2020/08/13/thinking-in-java/">thinking-in-java</a>
+          </li>
+        
+          <li>
+            <a href="/2020/08/13/hello-world/">Hello World</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+</body>
+</html>
